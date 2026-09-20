@@ -1091,6 +1091,11 @@ public class SqueezeService extends Service {
         }
 
         @Override
+        public void powerOff(Player player) {
+            mDelegate.command(player).cmd("power", "0").exec();
+        }
+
+        @Override
         public void powerOffAllPlayers() {
             if (!isConnected()) {
                 return;

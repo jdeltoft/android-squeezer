@@ -615,26 +615,34 @@ public class NowPlayingFragment extends Fragment  implements CallStateDialog.Cal
             actionBar.setDisplayShowCustomEnabled(true);
             actionBar.setCustomView(R.layout.action_bar_custom_view);
             AutoCompleteTextView spinner = actionBar.getCustomView().findViewById(R.id.player);
-            final PlayerDropdownAdapter playerAdapter = new PlayerDropdownAdapter(requireActivity(), connectedPlayers, activePlayer);
+            final PlayerDropdownAdapter playerAdapter = new PlayerDropdownAdapter(requireActivity(), connectedPlayers, activePlayer,
+                // Short click listener
+                player -> {
+                    spinner.dismissDropDown();
+                    if (player == PlayerDropdownAdapter.POWER_OFF_ALL) {
+                        spinner.setText((activePlayer != null) ? activePlayer.getName() : "", false);
+                        requireService().powerOffAllPlayers();
+                        return;
+                    }
+                    if (!player.getPlayerState().isPoweredOn()) {
+                        requireService().powerOn(player);
+                    }
+
+                    spinner.setText(player.getName(), false);
+                    if (getActivePlayer() != player) {
+                        requireService().setActivePlayer(player, ((PlayerDropdownAdapter) spinner.getAdapter()).continuePlayback());
+                    }
+                },
+                // Long click listener
+                player -> {
+                    spinner.dismissDropDown();
+                    requireService().powerOff(player);
+                }
+            );
             spinner.setAdapter(playerAdapter);
             playerAdapter.notifyDataSetChanged();
             spinner.setText((activePlayer != null) ? activePlayer.getName() : "", false);
-            spinner.setOnItemClickListener((adapterView, parent, position, id) -> {
-                Player selectedItem = playerAdapter.getItem(position);
-                if (selectedItem == PlayerDropdownAdapter.POWER_OFF_ALL) {
-                    spinner.setText((activePlayer != null) ? activePlayer.getName() : "", false);
-                    requireService().powerOffAllPlayers();
-                    return;
-                }
-                if (!selectedItem.getPlayerState().isPoweredOn()) {
-                    requireService().powerOn(selectedItem);
-                }
-
-                spinner.setText(selectedItem.getName(), false);
-                if (getActivePlayer() != selectedItem) {
-                    requireService().setActivePlayer(selectedItem, playerAdapter.continuePlayback());
-                }
-            });
+            spinner.setOnItemClickListener(null);
         } else {
             // 0 or 1 players, disable the spinner, and either show the sole player in the
             // action bar, or the app name if there are no players.

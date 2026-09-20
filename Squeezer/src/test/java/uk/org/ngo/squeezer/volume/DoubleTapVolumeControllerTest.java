@@ -51,7 +51,7 @@ public class DoubleTapVolumeControllerTest extends TestCase {
         callback = new TestCallback();
         controller = new DoubleTapVolumeController(callback, clock, 60, 600);
         controller.setEnabled(true);
-        controller.setTimeoutMs(400);
+        controller.setTimeoutMs(250);
     }
 
     public void testDisabled() {
@@ -166,8 +166,8 @@ public class DoubleTapVolumeControllerTest extends TestCase {
         controller.onAdjustVolume(1);
         assertEquals(1, callback.volumeAdjustments.size());
 
-        // Tap 2 at 450ms (> 400ms timeout)
-        clock.advance(450);
+        // Tap 2 at 300ms (> 250ms timeout)
+        clock.advance(300);
         controller.onAdjustVolume(1);
 
         // Second tap is treated as a new first tap

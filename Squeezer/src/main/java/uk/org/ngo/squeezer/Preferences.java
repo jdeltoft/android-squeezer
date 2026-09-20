@@ -589,7 +589,7 @@ public final class Preferences {
     }
 
     public int getDoubleTapVolumeTimeout() {
-        return sharedPreferences.getInt(KEY_DOUBLE_TAP_VOLUME_TIMEOUT, 400);
+        return sharedPreferences.getInt(KEY_DOUBLE_TAP_VOLUME_TIMEOUT, 250);
     }
 
     public void setDoubleTapVolumeTimeout(int timeoutMs) {

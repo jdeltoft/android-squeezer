@@ -15,16 +15,27 @@ import java.util.List;
 import uk.org.ngo.squeezer.model.Player;
 
 class PlayerDropdownAdapter extends ArrayAdapter<Player> {
+    public interface OnPlayerClickListener {
+        void onPlayerClick(Player player);
+    }
+    public interface OnPlayerLongClickListener {
+        void onPlayerLongClick(Player player);
+    }
+
     public static final Player POWER_OFF_ALL = new Player(java.util.Map.of("playerid", "POWER_OFF_ALL", "name", "POWER_OFF_ALL"));
     private final Player activePlayer;
+    private final OnPlayerClickListener clickListener;
+    private final OnPlayerLongClickListener longClickListener;
     private boolean continuePlayback;
 
-    public PlayerDropdownAdapter(Context actionBarContext, List<Player> connectedPlayers, Player activePlayer) {
+    public PlayerDropdownAdapter(Context actionBarContext, List<Player> connectedPlayers, Player activePlayer, OnPlayerClickListener clickListener, OnPlayerLongClickListener longClickListener) {
         super(actionBarContext, 0);
         add(null);
         addAll(connectedPlayers);
         add(POWER_OFF_ALL);
         this.activePlayer = activePlayer;
+        this.clickListener = clickListener;
+        this.longClickListener = longClickListener;
     }
 
     @Override
@@ -38,7 +49,11 @@ class PlayerDropdownAdapter extends ArrayAdapter<Player> {
             });
             return view;
         } else if (item == POWER_OFF_ALL) {
-            return LayoutInflater.from(getContext()).inflate(R.layout.dropdown_power_off_all, parent, false);
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.dropdown_power_off_all, parent, false);
+            view.setOnClickListener(v -> {
+                if (clickListener != null) clickListener.onPlayerClick(item);
+            });
+            return view;
         } else {
             TextView view = (TextView) LayoutInflater.from(getContext()).inflate(R.layout.dropdown_item, parent, false);
             view.setText(item.getName());
@@ -47,6 +62,15 @@ class PlayerDropdownAdapter extends ArrayAdapter<Player> {
             } else {
                 view.setAlpha(1.0f);
             }
+            view.setOnClickListener(v -> {
+                if (clickListener != null) clickListener.onPlayerClick(item);
+            });
+            view.setOnLongClickListener(v -> {
+                if (longClickListener != null) {
+                    longClickListener.onPlayerLongClick(item);
+                }
+                return true; // Consume the long click event
+            });
             return view;
         }
     }
